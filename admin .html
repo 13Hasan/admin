@@ -1,206 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin Panel - Football Shirts</title>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #0b3d02;
-      color: white;
-      margin: 0; padding: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: 50px auto;
-      background: #145214;
+      background: #111;
+      color: #eee;
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px black;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
+    .login-box, .admin-content {
+      max-width: 400px;
+      margin: 50px auto;
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #000;
     }
-    input, button {
+    input {
       width: 100%;
       padding: 10px;
       margin: 10px 0;
-      border-radius: 5px;
       border: none;
-      font-size: 16px;
+      border-radius: 4px;
     }
     button {
-      background: #4CAF50;
+      padding: 10px 20px;
+      background: green;
       color: white;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
     }
-    button:hover {
-      background: #45a049;
-    }
-    #admin-panel {
-      display: none;
-    }
-    .order, .product {
-      background: #1e5a1e;
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 6px;
-    }
-    .product img {
-      max-width: 100px;
-      display: block;
-      margin-bottom: 10px;
-      border-radius: 5px;
+    .hidden { display: none; }
+    .success {
+      color: lightgreen;
+      font-weight: bold;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="login-container">
-    <h1>Admin Login</h1>
-    <input type="text" id="admin-user" placeholder="Username" autocomplete="off" />
-    <input type="password" id="admin-pass" placeholder="Password" autocomplete="off" />
-    <button id="login-btn">Login</button>
-    <p id="login-msg" style="color: #ff6666;"></p>
-  </div>
 
-  <div class="container" id="admin-panel">
-    <h1>Admin Panel</h1>
-    <button id="logout-btn" style="background:#b30000;">Logout</button>
+<div class="login-box" id="login-box">
+  <h2>Admin Giriş</h2>
+  <input type="text" id="username" placeholder="İstifadəçi adı" />
+  <input type="password" id="password" placeholder="Şifrə" />
+  <button onclick="checkLogin()">Daxil ol</button>
+  <p id="error" style="color: red;"></p>
+</div>
 
-    <h2>Add New Football Shirt</h2>
-    <form id="product-form">
-      <input type="text" id="product-name" placeholder="Player Name - Club" required />
-      <input type="url" id="product-img" placeholder="Image URL" required />
-      <button type="submit">Add Product</button>
-    </form>
-
-    <h2>Current Products</h2>
-    <div id="products-list"></div>
-
-    <h2>Orders</h2>
-    <div id="orders-list">
-      <p>No orders yet.</p>
-    </div>
-  </div>
+<div class="admin-content hidden" id="admin-content">
+  <h2>Welcome, Admin ✅</h2>
+  <p class="success">Sifarişləri, formaları və digər admin funksiyaları buradan idarə edə bilərsiniz.</p>
+  <!-- Buraya istədiyin admin funksiyaları əlavə edə bilərik -->
+</div>
 
 <script>
-  // Admin username & password
-  const ADMIN_USER = "admin";
-  const ADMIN_PASS = "12345";
+  const ADMIN_USER = "qehbe";
+  const ADMIN_PASS = "sensen";
 
-  const loginContainer = document.getElementById("login-container");
-  const adminPanel = document.getElementById("admin-panel");
-  const loginBtn = document.getElementById("login-btn");
-  const loginMsg = document.getElementById("login-msg");
-  const logoutBtn = document.getElementById("logout-btn");
-
-  const productsList = document.getElementById("products-list");
-  const ordersList = document.getElementById("orders-list");
-
-  // Load saved products & orders
-  let products = JSON.parse(localStorage.getItem("products") || "[]");
-  let orders = JSON.parse(localStorage.getItem("orders") || "[]");
-
-  // Check if admin logged in
   function checkLogin() {
-    if(localStorage.getItem("isAdmin") === "true"){
-      showAdminPanel();
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    const error = document.getElementById("error");
+
+    if (user === ADMIN_USER && pass === ADMIN_PASS) {
+      document.getElementById("login-box").classList.add("hidden");
+      document.getElementById("admin-content").classList.remove("hidden");
     } else {
-      showLogin();
+      error.textContent = "Yanlış istifadəçi adı və ya şifrə!";
     }
   }
-
-  function showLogin(){
-    loginContainer.style.display = "block";
-    adminPanel.style.display = "none";
-  }
-  function showAdminPanel(){
-    loginContainer.style.display = "none";
-    adminPanel.style.display = "block";
-    renderProducts();
-    renderOrders();
-  }
-
-  // Login button click
-  loginBtn.addEventListener("click", () => {
-    const user = document.getElementById("admin-user").value.trim();
-    const pass = document.getElementById("admin-pass").value.trim();
-
-    if(user === ADMIN_USER && pass === ADMIN_PASS){
-      localStorage.setItem("isAdmin", "true");
-      loginMsg.textContent = "";
-      showAdminPanel();
-    } else {
-      loginMsg.textContent = "Invalid username or password!";
-    }
-  });
-
-  // Logout
-  logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("isAdmin");
-    showLogin();
-  });
-
-  // Render products
-  function renderProducts(){
-    productsList.innerHTML = "";
-    if(products.length === 0){
-      productsList.innerHTML = "<p>No products added yet.</p>";
-      return;
-    }
-    products.forEach((prod, idx) => {
-      const div = document.createElement("div");
-      div.className = "product";
-      div.innerHTML = `
-        <img src="${prod.img}" alt="${prod.name}" />
-        <strong>${prod.name}</strong>
-        <p>Price: $10</p>
-      `;
-      productsList.appendChild(div);
-    });
-  }
-
-  // Add product form
-  document.getElementById("product-form").addEventListener("submit", e => {
-    e.preventDefault();
-    const name = document.getElementById("product-name").value.trim();
-    const img = document.getElementById("product-img").value.trim();
-
-    if(name && img){
-      products.push({name, img});
-      localStorage.setItem("products", JSON.stringify(products));
-      renderProducts();
-      e.target.reset();
-      alert("Product added!");
-    }
-  });
-
-  // Render orders
-  function renderOrders(){
-    ordersList.innerHTML = "";
-    if(orders.length === 0){
-      ordersList.innerHTML = "<p>No orders yet.</p>";
-      return;
-    }
-    orders.forEach((order, idx) => {
-      const div = document.createElement("div");
-      div.className = "order";
-      div.innerHTML = `
-        <p><strong>Name:</strong> ${order.name}</p>
-        <p><strong>Email:</strong> ${order.email}</p>
-        <p><strong>Shirt:</strong> ${order.shirt} (${order.size})</p>
-        <p><strong>Address:</strong> ${order.address}, ${order.postcode}</p>
-        <p><strong>Phone:</strong> ${order.phone || "N/A"}</p>
-        <p><strong>Date:</strong> ${order.date}</p>
-      `;
-      ordersList.appendChild(div);
-    });
-  }
-
-  // On load, check login state
-  checkLogin();
 </script>
+
 </body>
 </html>

@@ -2,79 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Panel – Qaqash</title>
+  <title>Admin Panel – Orders</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #121212;
-      color: #fff;
-      padding: 50px;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+    h1 {
+      color: darkgreen;
       text-align: center;
     }
-    .login-box, .admin-panel {
-      max-width: 400px;
-      margin: 0 auto;
-      background: #1f1f1f;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.6);
+    .order {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
     }
-    input, button {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 5px;
-      border: none;
-      font-size: 16px;
-    }
-    button {
-      background-color: #28a745;
+    .order button {
+      background: red;
       color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #218838;
+    .add-order {
+      margin-top: 30px;
+      background: #e7ffe7;
+      padding: 20px;
+      border-radius: 10px;
     }
-    .error {
-      color: red;
-      margin-top: 10px;
+    .add-order input, .add-order select {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
     }
-    .hidden {
-      display: none;
+    .add-order button {
+      background: green;
+      color: white;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <h1>🛒 Admin Panel – Orders</h1>
 
-  <div id="login-box" class="login-box">
-    <h2>Admin Login</h2>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <div id="error-msg" class="error"></div>
-  </div>
+  <div id="orders"></div>
 
-  <div id="admin-panel" class="admin-panel hidden">
-    <h2>👑 Welcome to Admin Panel</h2>
-    <p>Only you can see this page.</p>
-    <!-- Burada sifarişlər və başqa şeylər olacaq -->
+  <div class="add-order">
+    <h3>➕ Add Test Order</h3>
+    <input id="testName" placeholder="Name" required>
+    <input id="testAddress" placeholder="Address" required>
+    <input id="testPostcode" placeholder="Postal Code">
+    <input id="testEmail" type="email" placeholder="Email" required>
+    <input id="testPhone" placeholder="Phone Number">
+    <input id="testShirt" placeholder="Shirt Name" required>
+    <select id="testSize">
+      <option value="S">S</option>
+      <option value="M">M</option>
+      <option value="L">L</option>
+      <option value="XL">XL</option>
+    </select>
+    <button onclick="addTestOrder()">➕ Add Order</button>
   </div>
 
   <script>
-    function login() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const errorMsg = document.getElementById('error-msg');
+    function loadOrders() {
+      const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+      const container = document.getElementById("orders");
+      container.innerHTML = "";
 
-      if (username === "qehbe" && password === "sensen") {
-        document.getElementById('login-box').classList.add('hidden');
-        document.getElementById('admin-panel').classList.remove('hidden');
-        errorMsg.textContent = "";
-      } else {
-        errorMsg.textContent = "⚠️ Wrong username or password.";
+      if (orders.length === 0) {
+        container.innerHTML = "<p>No orders found.</p>";
+        return;
       }
-    }
-  </script>
 
+      orders.forEach((o, index) => {
+        const div = document.createElement("div");
+        div.className = "order";
+        div.innerHTML = `
+          <b>#${index + 1}</b><br>
+          <b>Shirt:</b> ${o.shirt}<br>
+          <b>Name:</b> ${o.name}<br>
+          <b>Address:</b> ${o.address}<br>
+          <b>Postal Code:</b> ${o.postcode}<br>
+          <b>Email:</b> ${o.email}<br>
+          <b>Phone:</b> ${o.phone}<br>
+          <b>Size:</b> ${o.size}<br>
+          <b>Date:</b> ${o.date}<br>
+          <button onclick="deleteOrder(${index})">❌ Delete</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function deleteOrder(index) {
+      let orders = JSON.parse(localStorage.getItem("orders") || "[]");
+      orders.splice(index, 1);
+      localStorage.setItem("orders", JSON.stringify(orders));
+      loadOrders();
+    }
+
+    function addTestOrder() {
+      const order = {
+        shirt: document.getElementById("testShirt").value,
+        name: document.getElementById("testName").value,
+        address: document.getElementById("testAddress").value,
+        postcode: document.getElementById("testPostcode").value,
+        email: document.getElementById("testEmail").value,
+        phone: document.getElementById("testPhone").value,
+        size: document.getElementById("testSize").value,
+        date: new Date().toLocaleString()
+      };
+
+      let orders = JSON.parse(localStorage.getItem("orders") || "[]");
+      orders.push(order);
+      localStorage.setItem("orders", JSON.stringify(orders));
+      loadOrders();
+    }
+
+    window.onload = loadOrders;
+  </script>
 </body>
 </html>
